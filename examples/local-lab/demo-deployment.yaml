@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sscs-lab-demo
+  labels:
+    app: sscs-lab-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sscs-lab-demo
+  template:
+    metadata:
+      labels:
+        app: sscs-lab-demo
+    spec:
+      containers:
+        - name: app
+          image: ghcr.io/acme/sscs-lab-demo:1.0.0
+          ports:
+            - containerPort: 8080

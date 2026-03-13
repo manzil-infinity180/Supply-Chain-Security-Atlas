@@ -1,0 +1,27 @@
+---
+title: Browse by skill level
+description: Filter recommended pages by beginner, intermediate, or advanced SSCS depth.
+---
+
+import Callout from '../../../components/Callout.astro';
+import SkillLevelExplorer from '../../../components/SkillLevelExplorer.astro';
+import { skillLevelEntries } from '../../../data/skill-levels';
+
+<Callout variant="tip" title="Use this as a routing layer">
+The level labels are about expected SSCS background, not intelligence or role
+seniority. A senior platform engineer can still be a beginner to attestation
+formats.
+</Callout>
+
+## Recommended entry points
+
+<SkillLevelExplorer entries={skillLevelEntries} />
+
+## Reading patterns
+
+- Pair [Beginner](#recommended-entry-points) pages with the
+  [Glossary](/reference/glossary/) if the vocabulary is slowing you down.
+- Use [How the tools connect](/reference/how-tools-connect/) when you want to
+  expand sideways into adjacent projects after finishing one page.
+- Move from [Tutorials](/tutorials/) to project reference pages when you are
+  asking implementation questions instead of workflow questions.

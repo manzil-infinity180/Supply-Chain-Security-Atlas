@@ -1,0 +1,102 @@
+---
+title: Documentation design system
+description: Typography, callouts, code blocks, and layout conventions for the SSCS docs site.
+sidebar:
+  badge:
+    text: Reference
+    variant: note
+---
+
+import Callout from '../../../components/Callout.astro';
+
+This page documents the presentation rules used across the SSCS docs site. Its
+audience is anyone adding or editing pages in `sscs-docs-site/` who needs the
+site to stay readable, consistent, and strong in dark mode.
+
+## Typography and reading rhythm
+
+Body copy uses `Inter Variable` for dense technical explanation without the
+mechanical feel of a system stack. Code snippets, CLI commands, and inline
+identifiers use `IBM Plex Mono` so shell output and policy fragments remain easy
+to scan.
+
+The theme intentionally increases reading comfort by:
+
+- keeping a high-contrast dark palette as the default experience
+- widening heading support in the table of contents through level four
+- giving cards, callouts, and code blocks stronger surface separation
+- preserving comfortable spacing on both mobile and desktop widths
+
+## Callout patterns
+
+Use the local `Callout` component when you want a reader to notice guidance,
+risk, or context without breaking the flow of a page. The component keeps the
+site vocabulary aligned with four variants: `note`, `tip`, `warning`, and
+`danger`.
+
+<div class="callout-grid">
+	<Callout variant="note" title="Use for context">
+		Background information, terminology, or cross-project links belong in a
+		note.
+	</Callout>
+	<Callout variant="tip" title="Use for shortcuts">
+		Tips should save the reader time, such as a quicker verification path or a
+		docs-navigation recommendation.
+	</Callout>
+	<Callout variant="warning" title="Use for footguns">
+		Warnings are for easy mistakes, surprising defaults, or sharp edges that
+		could invalidate an attestation workflow.
+	</Callout>
+	<Callout variant="danger" title="Use for security risk">
+		Danger callouts are reserved for integrity failures, trust-boundary
+		confusion, or anything that could lead to a false sense of verification.
+	</Callout>
+</div>
+
+### Example usage
+
+```mdx title="Callout in an MDX page"
+import Callout from '../../../components/Callout.astro';
+
+<Callout variant="warning" title="Verify the signer identity">
+  Treat signature presence and signer trust as separate checks.
+</Callout>
+```
+
+## Code blocks and commands
+
+Starlight uses Expressive Code, so fenced blocks are syntax-highlighted and get
+a copy button automatically. Keep examples minimal and executable where
+possible, especially for shell sessions and config fragments.
+
+```bash title="Local docs workflow"
+cd sscs-docs-site
+npm install
+npm run dev
+```
+
+```ts title="Callout component contract"
+type Variant = 'note' | 'tip' | 'warning' | 'danger';
+```
+
+Inline code should be used for filenames, command names, flags, identifiers,
+and policy fields such as `.aflock`, `witness verify`, or `subject`.
+
+## Responsive layout
+
+The theme styles the nav, sidebar, content column, and right-hand table of
+contents as separate surfaces so the layout does not collapse into a single flat
+panel on large screens. On smaller screens, cards and callouts stack cleanly and
+the mobile table of contents remains available without hiding the main content.
+
+## Table of contents behavior
+
+Every long-form docs page should use a heading structure that starts at `##` and
+avoids skipping levels. The site-wide TOC is configured to include `##`, `###`,
+and `####`, which is enough depth for most tutorials and reference pages without
+turning the sidebar into noise.
+
+<Callout variant="tip" title="Authoring rule">
+	If a page does not produce a useful table of contents, restructure the page
+	before adding more prose. The fix is usually better headings, not more text.
+</Callout>

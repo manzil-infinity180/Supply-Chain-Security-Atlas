@@ -1,0 +1,24 @@
+---
+import { Aside } from '@astrojs/starlight/components';
+
+type Variant = 'note' | 'tip' | 'warning' | 'danger';
+
+interface Props {
+	variant?: Variant;
+	title?: string;
+}
+
+const { variant = 'note', title } = Astro.props as Props;
+
+const asideType = variant === 'warning' ? 'caution' : variant;
+const defaultTitles: Record<Variant, string> = {
+	note: 'Note',
+	tip: 'Tip',
+	warning: 'Warning',
+	danger: 'Danger',
+};
+---
+
+<Aside type={asideType} title={title ?? defaultTitles[variant]}>
+	<slot />
+</Aside>

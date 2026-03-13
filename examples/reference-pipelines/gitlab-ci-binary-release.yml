@@ -1,0 +1,48 @@
+stages:
+  - build
+  - verify
+  - release
+
+build-binary:
+  stage: build
+  script:
+    - install -m 0700 -d .secrets dist
+    - printf '%s' "$WITNESS_BUILD_KEY" > .secrets/build.pem
+    - chmod 0600 .secrets/build.pem
+    - witness run --step build --outfile dist/build.att.json --signer-file-key-path .secrets/build.pem --attestations gitlab,git,environment -- go build -trimpath -o dist/app ./...
+  artifacts:
+    expire_in: 7 days
+    paths:
+      - dist/app
+      - dist/build.att.json
+
+verify-binary-policy:
+  stage: verify
+  needs:
+    - build-binary
+  script:
+    - install -m 0700 -d .secrets
+    - printf '%s' "$WITNESS_POLICY_PUB" > .secrets/policy.pub
+    - chmod 0600 .secrets/policy.pub
+    - witness verify --policy .witness/release-policy-signed.json --publickey .secrets/policy.pub --artifactfile dist/app --attestations dist/build.att.json
+
+release-binary:
+  stage: release
+  needs:
+    - verify-binary-policy
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    - cosign sign-blob --key env://COSIGN_PRIVATE_KEY --output-signature dist/app.sig dist/app
+    - |
+      curl --header "JOB-TOKEN: $CI_JOB_TOKEN" \
+        --upload-file dist/app \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/app/${CI_COMMIT_TAG}/app"
+    - |
+      curl --header "JOB-TOKEN: $CI_JOB_TOKEN" \
+        --upload-file dist/app.sig \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/app/${CI_COMMIT_TAG}/app.sig"
+    - |
+      curl --header "JOB-TOKEN: $CI_JOB_TOKEN" \
+        --upload-file dist/build.att.json \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/app/${CI_COMMIT_TAG}/build.att.json"

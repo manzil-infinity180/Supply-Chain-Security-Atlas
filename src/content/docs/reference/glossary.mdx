@@ -1,0 +1,272 @@
+---
+title: SSCS glossary
+description: Plain-language definitions for the software supply chain security terms used across this docs site.
+---
+
+import Callout from '../../../components/Callout.astro';
+
+<Callout variant="tip" title="How to use this glossary">
+Use this page as the translation layer between the standards language in
+`attestation/` and the implementation language in `aflock`, `witness`,
+`go-witness`, and `rookery`.
+</Callout>
+
+## A
+
+### Admission controller
+
+A Kubernetes control point that can allow, deny, or mutate a request before the
+object is stored by the API server. In this site, admission is where image
+signatures, manifest attestations, and policy results can become deployment
+gates.
+
+See also: [Verification and admission](/kubernetes-sscs/verification-and-admission/),
+[Admission and policy enforcement](/kubernetes-sscs/admission-policy-enforcement/),
+[Sigstore Policy Controller](/sigstore/policy-controller/).
+
+### Attestation
+
+A signed statement about software or a delivery step. The statement says
+something happened, who claims it happened, and what artifact it applies to.
+Attestations are the core evidence unit used by [Witness](/witness/),
+[go-witness](/go-witness/), [rookery](/rookery/), and `aflock`.
+
+See also: [in-toto attestations](/in-toto-attestations/),
+[witness run](/witness/witness-run/),
+[Aflock attestations and verification](/aflock/attestations-and-verification/).
+
+### Attestor
+
+A component that gathers one kind of evidence and turns it into an attestation
+predicate. Examples in this workspace include Git metadata, OCI image metadata,
+Kubernetes manifest metadata, and command execution details.
+
+See also: [Witness attestors](/witness/attestors/),
+[go-witness custom attestors](/go-witness/custom-attestors/),
+[Rookery attestor plugins](/rookery/attestor-plugins/).
+
+## D
+
+### DSSE
+
+Dead Simple Signing Envelope. It is the envelope format used to sign and carry
+in-toto statements without depending on a single payload type. DSSE is central
+to [ITE-5](/in-toto-ites/ite-5/) and to the signing behavior in Witness,
+go-witness, rookery, and aflock.
+
+See also: [go-witness DSSE and in-toto](/go-witness/dsse-and-intoto/),
+[in-toto attestations](/in-toto-attestations/),
+[Aflock attestations and verification](/aflock/attestations-and-verification/).
+
+## I
+
+### in-toto statement
+
+The structured document that names the subject being described and embeds a
+predicate with the actual claim. A DSSE envelope usually wraps the statement
+before signing.
+
+See also: [in-toto attestations](/in-toto-attestations/),
+[Witness quick start](/witness/quick-start/),
+[ITE-6](/in-toto-ites/ite-6/).
+
+## K
+
+### Keyless signing
+
+A signing flow where an identity provider and short-lived certificates replace
+manually managed long-lived private keys. In the Sigstore model this usually
+means OIDC identity, Fulcio-issued certificates, and Rekor log entries.
+
+See also: [Sigstore keyless signing](/sigstore/keyless-signing/),
+[Witness signing methods](/witness/signing-methods/),
+[SPIFFE / SPIRE](/spiffe-spire/).
+
+## M
+
+### Merkle tree
+
+A tree structure built from hashes where parent nodes summarize child nodes. In
+aflock documentation, a Merkle-tree design is used to describe how session
+state could be tamper-evident over time, even though some of that design is
+broader than the current CLI implementation.
+
+See also: [Aflock session management](/aflock/session-management/),
+[Aflock policy reference](/aflock/policy-reference/).
+
+## O
+
+### OCI digest
+
+The immutable content hash of a container image or manifest in an OCI registry.
+Verification policies often bind signatures and attestations to digests rather
+than mutable tags such as `latest`.
+
+See also: [Kubernetes attesting images and manifests](/kubernetes-sscs/attesting-images-and-manifests/),
+[Sigstore cosign workflows](/sigstore/cosign-workflows/),
+[Witness attestors](/witness/attestors/).
+
+### OPA / Rego
+
+Open Policy Agent is a policy engine. Rego is its policy language. This site
+uses the pair as the main example of turning attestation data into explicit
+allow or deny decisions.
+
+See also: [Policy verification with OPA / Rego](/tutorials/policy-verification-with-opa-rego/),
+[Aflock Rego policy evaluation](/aflock/rego-policy-evaluation/),
+[go-witness sources and policy](/go-witness/sources-and-policy/).
+
+## P
+
+### Predicate
+
+The typed claim carried inside an in-toto statement. The predicate answers
+"what kind of evidence is this?" and provides the schema-specific fields for
+that evidence.
+
+See also: [in-toto attestations](/in-toto-attestations/),
+[Witness attestors](/witness/attestors/),
+[ITE-11](/in-toto-ites/ite-11/).
+
+### Provenance
+
+Evidence about how an artifact was built: source, builder, parameters,
+environment, and resulting outputs. Provenance is one of the most common
+attestation categories because it supports release gating and downstream trust.
+
+See also: [Chainguard SBOMs and provenance](/chainguard/sboms-and-provenance/),
+[Reference pipelines](/reference-pipelines/),
+[Google / SLSA](/adoption-guides/google-slsa/).
+
+### Policy
+
+A rule set that decides whether evidence is good enough for a given action. In
+this workspace, policy appears as signed `.aflock` documents, Witness policy
+files, and Rego modules evaluated over attestation data.
+
+See also: [Aflock policy reference](/aflock/policy-reference/),
+[Witness sign and policy](/witness/sign-and-policy/),
+[Admission and policy enforcement](/kubernetes-sscs/admission-policy-enforcement/).
+
+## R
+
+### Rekor
+
+Sigstore's transparency log. Rekor stores signed entries so consumers can check
+that a signing event happened and that the evidence was not silently hidden.
+
+See also: [Rekor and transparency](/sigstore/rekor-and-transparency/),
+[Sigstore security model](/sigstore/security-model/),
+[Sigstore and Witness](/sigstore/witness-and-in-toto/).
+
+### Root of trust
+
+The identity, key, certificate authority, workload identity issuer, or policy
+source that verification ultimately depends on. Without an agreed root of
+trust, a valid signature is only a cryptographic fact, not a trustworthy one.
+
+See also: [SPIFFE IDs and SVIDs](/spiffe-spire/spiffe-ids-and-svids/),
+[Aflock agent identity](/aflock/agent-identity/),
+[Witness verify](/witness/witness-verify/).
+
+## S
+
+### SBOM
+
+Software bill of materials. An inventory of the components inside a build
+artifact, often used for vulnerability analysis, policy checks, and dependency
+review.
+
+See also: [Chainguard SBOMs and provenance](/chainguard/sboms-and-provenance/),
+[Witness attestors](/witness/attestors/),
+[Admission and policy enforcement](/kubernetes-sscs/admission-policy-enforcement/).
+
+### Signer
+
+A component that produces the cryptographic signature over a DSSE envelope or
+other payload. This workspace includes file-based keys, Sigstore keyless
+signing, and SPIFFE-backed identity signers.
+
+See also: [Witness signing methods](/witness/signing-methods/),
+[go-witness signer registry](/go-witness/signers/),
+[Rookery signer plugins](/rookery/signer-plugins/).
+
+### SPIFFE ID
+
+A workload identity URI that names a workload in a trust domain. It answers
+"who is this process or workload?" in a machine-verifiable way.
+
+See also: [SPIFFE IDs and SVIDs](/spiffe-spire/spiffe-ids-and-svids/),
+[Aflock agent identity](/aflock/agent-identity/),
+[Workload identity](/kubernetes-sscs/workload-identity/).
+
+### SPIRE
+
+A production implementation of SPIFFE that issues and rotates workload
+identities. In this workspace it grounds local identity examples for aflock and
+SPIFFE-backed signing flows.
+
+See also: [SPIRE runtime model](/spiffe-spire/spire-runtime/),
+[SPIFFE / SPIRE local development](/spiffe-spire/local-development/),
+[Optional Kubernetes and SPIRE](/local-labs/optional-kubernetes-and-spire/).
+
+### Sublayout
+
+An in-toto layout or aflock policy structure that delegates part of a workflow
+to another trusted party while keeping verification chained to the parent
+policy.
+
+See also: [Aflock sublayouts](/aflock/sublayouts/),
+[Multi-party verification with sublayouts](/tutorials/multi-party-verification-with-sublayouts/),
+[ITE-2](/in-toto-ites/ite-2/).
+
+### Subject
+
+The artifact or set of artifacts the attestation is about. Subjects are usually
+identified by digest so that verification is stable even when human-friendly
+tags change.
+
+See also: [in-toto attestations](/in-toto-attestations/),
+[Witness run](/witness/witness-run/),
+[Kubernetes attesting images and manifests](/kubernetes-sscs/attesting-images-and-manifests/).
+
+## T
+
+### Transparency log
+
+An append-only log that records signing events or signed objects so observers
+can detect hidden or rewritten history. Rekor is the transparency log most
+often referenced in this site.
+
+See also: [Rekor and transparency](/sigstore/rekor-and-transparency/),
+[Sigstore security model](/sigstore/security-model/).
+
+### Trust domain
+
+The administrative boundary for SPIFFE identities. A trust domain decides which
+identities are issued together and which authorities can vouch for them.
+
+See also: [SPIFFE IDs and SVIDs](/spiffe-spire/spiffe-ids-and-svids/),
+[Aflock and agent identity](/spiffe-spire/aflock-and-agent-identity/).
+
+## V
+
+### Verification
+
+The act of checking that evidence, signatures, identities, and policy rules all
+line up for a specific decision such as "promote this release" or "admit this
+deployment".
+
+See also: [Witness verify](/witness/witness-verify/),
+[Aflock attestations and verification](/aflock/attestations-and-verification/),
+[Verification and admission](/kubernetes-sscs/verification-and-admission/).
+
+### Workload identity
+
+An identity bound to a running process, container, or service rather than to a
+human user. Workload identity matters because the trust question in SSCS is
+usually "which build system or runtime made this claim?"
+
+See also: [SPIFFE / SPIRE](/spiffe-spire/),
+[Workload identity](/kubernetes-sscs/workload-identity/),
+[Aflock agent identity](/aflock/agent-identity/).

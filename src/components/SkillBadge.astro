@@ -1,0 +1,15 @@
+---
+import type { SkillLevel } from '../data/skill-levels';
+
+interface Props {
+	level: SkillLevel;
+	compact?: boolean;
+}
+
+const { level, compact = false } = Astro.props as Props;
+---
+
+<span class:list={['skill-badge', `skill-badge--${level.toLowerCase()}`, compact && 'skill-badge--compact']}>
+	<span class="skill-badge__label">Level</span>
+	<span>{level}</span>
+</span>

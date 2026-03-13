@@ -1,0 +1,126 @@
+---
+title: SSCS Documentation Site
+description: A learning-first documentation hub for software supply chain security tools, standards, and deployment patterns.
+template: splash
+hero:
+  title: Software supply chain security without the hand-waving
+  tagline: Learn the attestation model, policy engine, identity system, and ecosystem connections behind aflock, rookery, witness, and in-toto.
+  actions:
+    - text: Start with aflock
+      link: /aflock/
+      icon: right-arrow
+    - text: See the foundations
+      link: /in-toto-attestations/
+      variant: minimal
+---
+
+import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+<Aside type="tip" title="Recommended starting point">
+`aflock` is the highest-priority track in this site because it connects policy,
+agent identity, signed attestations, sublayouts, and verification into one
+workflow.
+</Aside>
+
+## What this site covers
+
+This docs site is organized around the tools and standards in this workspace:
+
+- `aflock` for AI agent policy enforcement with signed attestations
+- `rookery` for modular attestation plugins and custom binary assembly
+- `witness` and `go-witness` for attestation creation, signing, and verification
+- `in-toto` attestations and ITE proposals for the underlying model
+- Sigstore, Chainguard, and SPIFFE/SPIRE for the surrounding trust ecosystem
+- Kubernetes-native delivery patterns that connect CI evidence to admission and
+  runtime identity
+- Local lab tracks that let you practice the model without needing cloud
+  infrastructure
+
+## Jump to a section
+
+<CardGrid stagger>
+	<LinkCard
+		title="Find your route"
+		href="/reference/"
+		description="Use built-in search, the glossary, the tool-relationship map, and skill-level browsing to get to the right page faster."
+	/>
+	<LinkCard
+		title="aflock"
+		href="/aflock/"
+		description="Start with the AI agent policy framework: signed `.aflock` files, identity derivation, MCP, and verifiable execution."
+	/>
+	<LinkCard
+		title="rookery"
+		href="/rookery/"
+		description="Understand the modular attestation monorepo, plugin boundaries, presets, and custom builders."
+	/>
+	<LinkCard
+		title="witness"
+		href="/witness/"
+		description="Learn the CLI workflow for generating, signing, storing, and verifying in-toto attestations."
+	/>
+	<LinkCard
+		title="go-witness"
+		href="/go-witness/"
+		description="Follow the Go library surface for programmatic attestation and verification pipelines."
+	/>
+	<LinkCard
+		title="in-toto ITEs"
+		href="/in-toto-ites/"
+		description="Read plain-language summaries of the enhancement proposals that shaped DSSE, contextual attestations, and X.509-based signing."
+	/>
+	<LinkCard
+		title="Sigstore and identity"
+		href="/sigstore/"
+		description="Connect Fulcio, Rekor, SPIFFE/SPIRE, and workload identity to the attestation tools in this workspace."
+	/>
+	<LinkCard
+		title="Adoption guides"
+		href="/adoption-guides/"
+		description="See how Datadog, GitHub, SLSA, CNCF projects, and TestifySec-style workflows turn attestation theory into production rollout patterns."
+	/>
+	<LinkCard
+		title="Tutorial tracks"
+		href="/tutorials/"
+		description="Follow guided beginner, intermediate, and advanced paths from your first attestation to delegated aflock sublayout workflows."
+	/>
+	<LinkCard
+		title="Local labs"
+		href="/local-labs/"
+		description="Set up a repeatable local SSCS workbench with Witness, Rego gates, manifest verification, and optional Kubernetes or SPIRE extensions."
+	/>
+	<LinkCard
+		title="Reference pipelines"
+		href="/reference-pipelines/"
+		description="Use GitHub Actions and GitLab CI reference flows for build attestations, policy gates, Sigstore signing, and release promotion."
+	/>
+	<LinkCard
+		title="Kubernetes-native SSCS"
+		href="/kubernetes-sscs/"
+		description="Trace how build evidence, manifest attestations, admission checks, and SPIFFE-based workload identity fit together for cluster-bound delivery."
+	/>
+</CardGrid>
+
+## Find things quickly
+
+- Use the search control in the header when you already know the term, command,
+  or project name.
+- Use the [Glossary](/reference/glossary/) when a term like `DSSE`, `SVID`, or
+  `predicate` is the blocker.
+- Use [How the tools connect](/reference/how-tools-connect/) when you need to
+  understand where `aflock`, `witness`, `go-witness`, `rookery`, and Sigstore
+  overlap or diverge.
+- Use [Browse by skill level](/reference/skill-levels/) when you want pages
+  filtered to beginner, intermediate, or advanced depth.
+
+## Suggested path
+
+1. Read [in-toto attestations](/in-toto-attestations/) for the trust model.
+2. Go to [aflock](/aflock/) for the highest-priority project.
+3. Use the guided [Tutorial tracks](/tutorials/) to move from a local attestation loop to policy-backed CI/CD and delegated verification.
+4. Use [Local labs](/local-labs/) when you want a repeatable workspace-rooted sandbox for build, attest, sign, verify, Rego, and manifest checks.
+5. Use [witness](/witness/) and [go-witness](/go-witness/) to understand CLI and library execution paths.
+6. Read [Reference pipelines](/reference-pipelines/) for copy-paste GitHub Actions and GitLab CI patterns that add policy gates to real release flows.
+7. Read [Kubernetes-native SSCS](/kubernetes-sscs/) to see how those primitives become a cluster delivery flow with admission and workload identity.
+8. Read [Adoption guides](/adoption-guides/) to see what real rollout patterns look like across companies and CNCF projects.
+9. Finish with [Sigstore](/sigstore/), [Chainguard concepts](/chainguard/), and [SPIFFE / SPIRE](/spiffe-spire/) to place the tools in a broader production context.

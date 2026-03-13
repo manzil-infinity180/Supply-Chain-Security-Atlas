@@ -1,0 +1,93 @@
+---
+import SkillBadge from './SkillBadge.astro';
+import type { SkillLevelEntry } from '../data/skill-levels';
+
+interface Props {
+	entries: SkillLevelEntry[];
+}
+
+const { entries } = Astro.props as Props;
+const filters = ['All', 'Beginner', 'Intermediate', 'Advanced'] as const;
+---
+
+<section class="level-browser" data-level-browser>
+	<div class="level-browser__intro">
+		<p>
+			Use these labels as a rough routing signal, not a gate. "Beginner" means
+			minimal SSCS background required. "Advanced" usually means you are reading
+			source code, designing policy boundaries, or extending the toolchain.
+		</p>
+	</div>
+
+	<div class="level-browser__controls" role="toolbar" aria-label="Filter documentation by skill level">
+		{filters.map((filter, index) => (
+			<button
+				type="button"
+				class:list={['level-browser__button', index === 0 && 'is-active']}
+				data-filter={filter}
+				aria-pressed={index === 0 ? 'true' : 'false'}
+			>
+				{filter}
+			</button>
+		))}
+	</div>
+
+	<p class="level-browser__summary" data-level-summary>
+		Showing all {entries.length} curated entry points.
+	</p>
+
+	<div class="level-browser__grid">
+		{entries.map((entry) => (
+			<article class="level-card" data-entry data-level={entry.level}>
+				<div class="level-card__header">
+					<SkillBadge level={entry.level} compact />
+					<h3>
+						<a href={entry.href}>{entry.title}</a>
+					</h3>
+				</div>
+				<p>{entry.description}</p>
+				<p class="level-card__reason">{entry.reason}</p>
+				<div class="level-card__topics" aria-label="Topics">
+					{entry.topics.map((topic) => (
+						<span class="level-card__topic">{topic}</span>
+					))}
+				</div>
+			</article>
+		))}
+	</div>
+</section>
+
+<script is:inline>
+	document.querySelectorAll('[data-level-browser]').forEach((browser) => {
+		const buttons = Array.from(browser.querySelectorAll('[data-filter]'));
+		const cards = Array.from(browser.querySelectorAll('[data-entry]'));
+		const summary = browser.querySelector('[data-level-summary]');
+
+		const update = (filter) => {
+			let visible = 0;
+
+			cards.forEach((card) => {
+				const show = filter === 'All' || card.dataset.level === filter;
+				card.hidden = !show;
+				if (show) visible += 1;
+			});
+
+			buttons.forEach((button) => {
+				const active = button.dataset.filter === filter;
+				button.classList.toggle('is-active', active);
+				button.setAttribute('aria-pressed', active ? 'true' : 'false');
+			});
+
+			if (summary) {
+				summary.textContent =
+					filter === 'All'
+						? `Showing all ${visible} curated entry points.`
+						: `Showing ${visible} ${filter.toLowerCase()} entry points.`;
+			}
+		};
+
+		buttons.forEach((button) => {
+			button.addEventListener('click', () => update(button.dataset.filter || 'All'));
+		});
+	});
+</script>

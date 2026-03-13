@@ -1,0 +1,15 @@
+{
+  "name": "research-agent",
+  "limits": {
+    "maxSpendUSD": { "value": 5, "enforcement": "fail-fast" },
+    "maxTurns": { "value": 10, "enforcement": "post-hoc" }
+  },
+  "tools": {
+    "allow": ["Read", "Glob", "Grep"],
+    "deny": ["Write", "Bash", "Task"]
+  },
+  "files": {
+    "allow": ["docs/**"],
+    "deny": ["**/.env", "**/secrets/**"]
+  }
+}

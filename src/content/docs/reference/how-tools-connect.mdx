@@ -1,0 +1,139 @@
+---
+title: How the tools connect
+description: Relationship map for aflock, rookery, Witness, go-witness, in-toto, Sigstore, SPIFFE/SPIRE, and the deployment tracks in this site.
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+import Callout from '../../../components/Callout.astro';
+
+<Callout variant="note" title="Read this page when">
+You know some of the tool names already but not where one project stops and the
+next one starts.
+</Callout>
+
+## Relationship diagram
+
+```text
+Source repo / prompt / manifest
+              |
+              v
+    +------------------------+
+    |   Evidence collection  |
+    |  witness / go-witness  |
+    |  rookery attestors     |
+    +------------------------+
+              |
+              v
+    in-toto Statement + predicate
+              |
+              v
+         DSSE envelope
+              |
+      +-------+--------+
+      |                |
+      v                v
+ Sigstore / SPIFFE   aflock
+ signer identities   agent/session attestations
+      |                |
+      +-------+--------+
+              |
+              v
+      verification and policy
+ witness verify / go-witness / aflock verify / admission systems
+              |
+      +-------+--------+-------------------+
+      |                |                   |
+      v                v                   v
+  CI/CD promotion   Kubernetes admission   Local labs and tutorials
+  and release gates and runtime trust      for learning and rehearsal
+```
+
+## Tool roles
+
+| Area | Primary role in this workspace | Start here |
+| --- | --- | --- |
+| `aflock` | Enforce policy around AI-agent behavior and sign execution evidence. | [aflock overview](/aflock/) |
+| `witness` | CLI for gathering, signing, and verifying in-toto attestations. | [Witness quick start](/witness/quick-start/) |
+| `go-witness` | Go library surface behind attestation, signing, and verification flows. | [go-witness core API](/go-witness/core-api/) |
+| `rookery` | Modular plugin workspace and hardened packaging path for attestation tooling. | [Rookery architecture](/rookery/architecture/) |
+| `in-toto` + ITEs | Shared attestation model and proposal history. | [in-toto attestations](/in-toto-attestations/) |
+| Sigstore | Keyless signing, transparency, and ecosystem verification patterns. | [Sigstore overview](/sigstore/) |
+| SPIFFE / SPIRE | Workload identity foundation for signer trust and runtime identity. | [SPIFFE / SPIRE overview](/spiffe-spire/) |
+| Kubernetes track | Cluster-facing verification, admission, and workload identity patterns. | [Kubernetes-native SSCS](/kubernetes-sscs/) |
+| Reference pipelines | Copy-paste CI patterns for GitHub Actions and GitLab CI. | [Reference pipelines](/reference-pipelines/) |
+| Local labs | Reproducible practice environment rooted in this workspace. | [Local labs](/local-labs/) |
+
+## Common paths through the site
+
+### I want to understand the underlying trust model first
+
+1. Read [in-toto attestations](/in-toto-attestations/).
+2. Skim the relevant [ITE pages](/in-toto-ites/), especially
+   [ITE-5](/in-toto-ites/ite-5/), [ITE-6](/in-toto-ites/ite-6/), and
+   [ITE-7](/in-toto-ites/ite-7/).
+3. Move to [Witness quick start](/witness/quick-start/) or
+   [What is SSCS and why should I care?](/tutorials/what-is-sscs-and-why-should-i-care/).
+
+### I need a practical build, sign, and verify loop
+
+1. Start with [Local lab setup](/local-labs/setup-workspace/).
+2. Run [Build, attest, sign, and verify](/local-labs/build-attest-sign-verify/).
+3. Move to [GitHub Actions](/reference-pipelines/github-actions/) or
+   [GitLab CI](/reference-pipelines/gitlab-ci/) when you are ready to carry the
+   loop into CI.
+
+### I care about AI agents and delegated policy
+
+1. Start at [aflock](/aflock/).
+2. Read [Agent identity](/aflock/agent-identity/) and
+   [MCP and hooks](/aflock/mcp-integration/).
+3. Continue with [Sublayouts](/aflock/sublayouts/) and
+   [Session management](/aflock/session-management/).
+4. Use [SPIFFE / SPIRE local development](/spiffe-spire/local-development/)
+   when you want to ground identity with workload certificates.
+
+### I need cluster-bound verification and admission decisions
+
+1. Start with [Kubernetes-native SSCS](/kubernetes-sscs/).
+2. Read [Attesting images and manifests](/kubernetes-sscs/attesting-images-and-manifests/).
+3. Continue with [Verification and admission](/kubernetes-sscs/verification-and-admission/)
+   and [Admission and policy enforcement](/kubernetes-sscs/admission-policy-enforcement/).
+4. Cross-check [Sigstore Policy Controller](/sigstore/policy-controller/) and
+   [Workload identity](/kubernetes-sscs/workload-identity/).
+
+## Cross-reference clusters
+
+<CardGrid stagger>
+	<LinkCard
+		title="Identity cluster"
+		href="/spiffe-spire/"
+		description="SPIFFE IDs, SPIRE runtime, aflock agent identity, and workload-backed signing."
+	/>
+	<LinkCard
+		title="Policy cluster"
+		href="/aflock/policy-reference/"
+		description="Signed `.aflock` policies, Witness policy files, Rego rules, and admission policy enforcement."
+	/>
+	<LinkCard
+		title="Attestation cluster"
+		href="/witness/witness-run/"
+		description="Attestors, predicates, DSSE envelopes, statement subjects, and retention across pipelines."
+	/>
+	<LinkCard
+		title="Delivery cluster"
+		href="/reference-pipelines/"
+		description="GitHub Actions, GitLab CI, promotion controls, Kubernetes admission, and local rehearsal loops."
+	/>
+</CardGrid>
+
+## When the boundaries matter
+
+- Use [witness](/witness/) when you want CLI behavior you can run directly.
+- Use [go-witness](/go-witness/) when you need to embed attestation or
+  verification logic in your own Go code.
+- Use [rookery](/rookery/) when the plugin inventory, packaging boundary, or
+  hardened binary shape matters.
+- Use [aflock](/aflock/) when the subject is AI-agent behavior and signed policy
+  enforcement rather than a generic build pipeline.
+- Use [Sigstore](/sigstore/) and [SPIFFE / SPIRE](/spiffe-spire/) when you are
+  reasoning about who is allowed to sign, not just what got signed.

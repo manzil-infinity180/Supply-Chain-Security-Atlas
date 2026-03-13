@@ -1,0 +1,27 @@
+{
+  "name": "parent-review",
+  "limits": {
+    "maxSpendUSD": { "value": 20, "enforcement": "fail-fast" },
+    "maxTurns": { "value": 40, "enforcement": "post-hoc" }
+  },
+  "tools": {
+    "allow": ["Read", "Glob", "Grep", "Bash", "Task"],
+    "deny": ["Write"]
+  },
+  "files": {
+    "allow": ["docs/**", "src/**", "policies/**"],
+    "deny": ["**/.env", "**/secrets/**"]
+  },
+  "sublayouts": [
+    {
+      "name": "research-agent",
+      "policy": "./policies/research.aflock",
+      "limits": {
+        "maxSpendUSD": { "value": 5, "enforcement": "fail-fast" },
+        "maxTurns": { "value": 10, "enforcement": "fail-fast" }
+      },
+      "inherit": ["files", "domains", "functionaries"],
+      "attestationPrefix": "research-"
+    }
+  ]
+}

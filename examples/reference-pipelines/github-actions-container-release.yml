@@ -1,0 +1,103 @@
+name: release-image-with-witness
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  build-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417
+        with:
+          go-version-file: go.mod
+      - name: Install witness
+        run: go install github.com/in-toto/witness@v0.9.1
+      - name: Materialize build signer
+        env:
+          WITNESS_BUILD_KEY: ${{ secrets.WITNESS_BUILD_KEY }}
+        run: |
+          install -m 0700 -d "$RUNNER_TEMP/witness"
+          printf '%s' "$WITNESS_BUILD_KEY" > "$RUNNER_TEMP/witness/build.pem"
+          chmod 0600 "$RUNNER_TEMP/witness/build.pem"
+      - name: Build image and export tarball with Witness
+        run: |
+          mkdir -p dist
+          export IMAGE="ghcr.io/${{ github.repository }}:${{ github.sha }}"
+          "$HOME/go/bin/witness" run \
+            --step image-build \
+            --outfile dist/image-build.att.json \
+            --signer-file-key-path "$RUNNER_TEMP/witness/build.pem" \
+            --attestations git,github,environment,docker,oci \
+            -- /bin/sh -ec 'docker build --metadata-file dist/docker-metadata.json -t "$IMAGE" . && docker save "$IMAGE" -o dist/image.tar'
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        with:
+          name: image-output
+          path: |
+            dist/image.tar
+            dist/image-build.att.json
+            dist/docker-metadata.json
+
+  verify-image-policy:
+    needs: [build-image]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417
+        with:
+          go-version-file: go.mod
+      - name: Install witness
+        run: go install github.com/in-toto/witness@v0.9.1
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: image-output
+          path: dist
+      - name: Materialize policy verifier
+        env:
+          WITNESS_POLICY_PUB: ${{ secrets.WITNESS_POLICY_PUB }}
+        run: |
+          printf '%s' "$WITNESS_POLICY_PUB" > "$RUNNER_TEMP/policy.pub"
+          chmod 0600 "$RUNNER_TEMP/policy.pub"
+      - name: Verify image tarball against policy
+        run: |
+          "$HOME/go/bin/witness" verify \
+            --policy .witness/image-policy-signed.json \
+            --publickey "$RUNNER_TEMP/policy.pub" \
+            --artifactfile dist/image.tar \
+            --attestations dist/image-build.att.json
+
+  publish-image:
+    needs: [verify-image-policy]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: image-output
+          path: dist
+      - uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: sigstore/cosign-installer@ba7bc0a3fef59531c69a25acd34668d6d3fe6f22
+      - name: Push and sign image digest
+        run: |
+          export IMAGE="ghcr.io/${{ github.repository }}:${{ github.sha }}"
+          docker load -i dist/image.tar
+          docker push "$IMAGE"
+          IMAGE_DIGEST="$(docker inspect --format='{{index .RepoDigests 0}}' "$IMAGE")"
+          cosign sign --yes "$IMAGE_DIGEST"

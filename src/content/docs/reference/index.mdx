@@ -1,0 +1,56 @@
+---
+title: Reference and navigation
+description: Use built-in search, glossary terms, and curated cross-references to move through the SSCS docs site faster.
+---
+
+import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+<Aside type="tip" title="Fastest way to navigate">
+Use the built-in search control in the site header when you know the term you
+want, then use the glossary and relationship map below when you need context or
+neighboring concepts.
+</Aside>
+
+This section is the site-level map. It does not replace project docs. It helps
+you find the right project or concept before you drop into the deeper pages.
+
+## What lives here
+
+<CardGrid stagger>
+	<LinkCard
+		title="Glossary"
+		href="/reference/glossary/"
+		description="Define the core SSCS terms used across aflock, Witness, go-witness, rookery, Sigstore, and SPIFFE/SPIRE."
+	/>
+	<LinkCard
+		title="How the tools connect"
+		href="/reference/how-tools-connect/"
+		description="See the relationship diagram and follow common paths from source repo to signed release to admission."
+	/>
+	<LinkCard
+		title="Browse by skill level"
+		href="/reference/skill-levels/"
+		description="Filter recommended entry points by beginner, intermediate, or advanced depth."
+	/>
+	<LinkCard
+		title="Design system"
+		href="/reference/design-system/"
+		description="Reference the visual and writing conventions used across the docs site."
+	/>
+</CardGrid>
+
+## Why this matters
+
+- Search finds the exact page when you already know the vocabulary.
+- The [Glossary](/reference/glossary/) helps when the vocabulary itself is the
+  blocker.
+- [How the tools connect](/reference/how-tools-connect/) helps when you know
+  two tools but not the boundary between them.
+- [Browse by skill level](/reference/skill-levels/) helps when you need a page
+  that matches your current depth instead of the most exhaustive reference.
+
+## Related sections
+
+- [Tutorials](/tutorials/) for guided learning tracks
+- [Local labs](/local-labs/) for hands-on practice
+- [Reference pipelines](/reference-pipelines/) for copy-paste CI/CD patterns

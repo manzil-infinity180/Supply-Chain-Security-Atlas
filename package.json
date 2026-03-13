@@ -1,0 +1,30 @@
+{
+  "name": "sscs-docs-site",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "verify:build": "astro build",
+    "verify:dev": "node ./scripts/qa/check-dev-server.mjs",
+    "verify:links": "node ./scripts/qa/check-links.mjs",
+    "verify:ui": "node ./scripts/qa/check-ui.mjs",
+    "verify:lighthouse": "node ./scripts/qa/run-lighthouse.mjs",
+    "verify": "npm run verify:build && npm run verify:dev && npm run verify:links && npm run verify:ui && npm run verify:lighthouse"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.38.1",
+    "@fontsource-variable/inter": "^5.2.8",
+    "@fontsource/ibm-plex-mono": "^5.2.7",
+    "astro": "^6.0.1",
+    "property-information": "^7.1.0",
+    "sharp": "^0.34.2"
+  },
+  "devDependencies": {
+    "lighthouse": "^12.8.2",
+    "playwright": "^1.54.2"
+  }
+}

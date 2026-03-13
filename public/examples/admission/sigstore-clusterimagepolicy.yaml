@@ -1,0 +1,23 @@
+apiVersion: policy.sigstore.dev/v1beta1
+kind: ClusterImagePolicy
+metadata:
+  name: ghcr-acme-release
+spec:
+  images:
+    - glob: "ghcr.io/acme/*"
+  authorities:
+    - name: github-release
+      keyless:
+        url: https://fulcio.sigstore.dev
+        identities:
+          - issuer: https://token.actions.githubusercontent.com
+            subjectRegExp: "https://github.com/acme/.+/.github/workflows/release.yml@refs/tags/.+"
+      ctlog:
+        url: https://rekor.sigstore.dev
+      attestations:
+        - name: provenance
+          predicateType: https://slsa.dev/provenance/v1
+          policy:
+            type: cue
+            data: |
+              predicateType: "https://slsa.dev/provenance/v1"

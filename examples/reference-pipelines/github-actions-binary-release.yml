@@ -1,0 +1,102 @@
+name: release-binary-with-witness
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417
+        with:
+          go-version-file: go.mod
+      - name: Install witness
+        run: go install github.com/in-toto/witness@v0.9.1
+      - name: Materialize build signer
+        env:
+          WITNESS_BUILD_KEY: ${{ secrets.WITNESS_BUILD_KEY }}
+        run: |
+          install -m 0700 -d "$RUNNER_TEMP/witness"
+          printf '%s' "$WITNESS_BUILD_KEY" > "$RUNNER_TEMP/witness/build.pem"
+          chmod 0600 "$RUNNER_TEMP/witness/build.pem"
+      - name: Build with Witness
+        run: |
+          mkdir -p dist
+          "$HOME/go/bin/witness" run \
+            --step build \
+            --outfile dist/build.att.json \
+            --signer-file-key-path "$RUNNER_TEMP/witness/build.pem" \
+            --attestations git,github,environment \
+            -- go build -trimpath -o dist/app ./...
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        with:
+          name: build-output
+          path: |
+            dist/app
+            dist/build.att.json
+
+  verify-policy:
+    needs: [build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417
+        with:
+          go-version-file: go.mod
+      - name: Install witness
+        run: go install github.com/in-toto/witness@v0.9.1
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: build-output
+          path: dist
+      - name: Materialize policy verifier
+        env:
+          WITNESS_POLICY_PUB: ${{ secrets.WITNESS_POLICY_PUB }}
+        run: |
+          printf '%s' "$WITNESS_POLICY_PUB" > "$RUNNER_TEMP/policy.pub"
+          chmod 0600 "$RUNNER_TEMP/policy.pub"
+      - name: Verify build evidence against policy
+        run: |
+          "$HOME/go/bin/witness" verify \
+            --policy .witness/release-policy-signed.json \
+            --publickey "$RUNNER_TEMP/policy.pub" \
+            --artifactfile dist/app \
+            --attestations dist/build.att.json
+
+  publish:
+    needs: [verify-policy]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: build-output
+          path: dist
+      - uses: sigstore/cosign-installer@ba7bc0a3fef59531c69a25acd34668d6d3fe6f22
+      - name: Sign release blob with GitHub OIDC
+        working-directory: dist
+        run: |
+          cosign sign-blob \
+            --yes \
+            --output-signature app.sig \
+            --output-certificate app.pem \
+            app
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/app
+            dist/app.sig
+            dist/app.pem
+            dist/build.att.json

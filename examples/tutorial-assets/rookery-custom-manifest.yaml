@@ -1,0 +1,9 @@
+name: docs-custom-cilock
+output: ./docs-custom-cilock
+preset: minimal
+plugins:
+  - module: github.com/aflock-ai/rookery/plugins/signers/spiffe
+  - path: ./plugins/attestors/sarif
+build_options:
+  fips_mode: "on"
+  trimpath: true

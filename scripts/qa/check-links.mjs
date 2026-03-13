@@ -6,11 +6,14 @@ import {
   distDir,
   listHtmlFiles,
   routeFromHtmlFile,
+  siteRoot,
 } from './shared.mjs';
 
 const SITE_ORIGIN = 'https://sscs-docs.local';
 const ATTR_PATTERN = /\s(?:href|src)=["']([^"']+)["']/g;
 const ID_PATTERN = /\sid=["']([^"']+)["']/g;
+
+const configuredSiteOrigin = await readConfiguredSiteOrigin();
 
 const htmlFiles = await listHtmlFiles();
 const idsByFile = new Map();
@@ -41,6 +44,12 @@ for (const htmlFile of htmlFiles) {
       if (error) {
         internalErrors.push(error);
       }
+    } else if (configuredSiteOrigin && resolved.origin === configuredSiteOrigin) {
+      const remapped = new URL(resolved.pathname + resolved.hash, SITE_ORIGIN);
+      const error = await validateInternalTarget(remapped, htmlFile, idsByFile);
+      if (error) {
+        internalErrors.push(error);
+      }
     } else {
       externalTargets.add(resolved.toString());
     }
@@ -53,8 +62,17 @@ if (preTagCount !== highlightedPreTagCount) {
   );
 }
 
-const externalErrors = await checkExternalTargets([...externalTargets].sort());
+const { errors: externalErrors, warnings: externalWarnings } = await checkExternalTargets([...externalTargets].sort());
 const allErrors = [...internalErrors, ...externalErrors];
+
+if (externalWarnings.length > 0) {
+  console.warn(
+    createErrorReport(
+      `External link warnings (${externalWarnings.length} URLs unreachable due to network issues — these are not treated as failures):`,
+      externalWarnings,
+    ),
+  );
+}
 
 if (allErrors.length > 0) {
   throw new Error(createErrorReport('Link validation failed.', allErrors));
@@ -75,11 +93,21 @@ function shouldSkip(target) {
 
 async function validateInternalTarget(url, sourceFile, knownIds) {
   const pathname = decodeURIComponentSafe(url.pathname);
-  const targetFile = resolveDistTarget(pathname);
+  const candidates = resolveDistTarget(pathname);
+  const candidateList = Array.isArray(candidates) ? candidates : [candidates];
 
-  try {
-    await fs.access(targetFile);
-  } catch {
+  let targetFile = null;
+  for (const candidate of candidateList) {
+    try {
+      await fs.access(candidate);
+      targetFile = candidate;
+      break;
+    } catch {
+      // try next candidate
+    }
+  }
+
+  if (!targetFile) {
     return `${path.relative(distDir, sourceFile)} -> ${url.pathname}${url.hash}: target does not exist in dist/.`;
   }
 
@@ -104,11 +132,15 @@ function resolveDistTarget(pathname) {
   if (path.extname(directFile)) {
     return directFile;
   }
-  return path.join(distDir, cleanPath, 'index.html');
+  const dirIndex = path.join(distDir, cleanPath, 'index.html');
+  const stripped = cleanPath.replace(/\/$/, '');
+  const flatFile = path.join(distDir, `${stripped}.html`);
+  return [dirIndex, flatFile];
 }
 
 async function checkExternalTargets(targets) {
   const errors = [];
+  const warnings = [];
   const concurrency = 8;
   let index = 0;
 
@@ -118,13 +150,17 @@ async function checkExternalTargets(targets) {
         const current = targets[index++];
         const result = await probeExternal(current);
         if (!result.ok) {
-          errors.push(`${current}: ${result.reason}`);
+          if (result.networkError) {
+            warnings.push(`${current}: ${result.reason}`);
+          } else {
+            errors.push(`${current}: ${result.reason}`);
+          }
         }
       }
     }),
   );
 
-  return errors;
+  return { errors, warnings };
 }
 
 async function probeExternal(url) {
@@ -148,16 +184,17 @@ async function probeExternal(url) {
       if (response.status === 405 && method === 'HEAD') {
         continue;
       }
-      return { ok: false, reason: `HTTP ${response.status}` };
+      return { ok: false, reason: `HTTP ${response.status}`, networkError: false };
     } catch (error) {
       if (method === 'HEAD') {
         continue;
       }
-      return { ok: false, reason: error.name === 'AbortError' ? 'request timed out' : error.message };
+      const reason = error.name === 'AbortError' ? 'request timed out' : error.message;
+      return { ok: false, reason, networkError: true };
     }
   }
 
-  return { ok: false, reason: 'request failed' };
+  return { ok: false, reason: 'request failed', networkError: true };
 }
 
 function decodeURIComponentSafe(value) {
@@ -166,4 +203,18 @@ function decodeURIComponentSafe(value) {
   } catch {
     return value;
   }
+}
+
+async function readConfiguredSiteOrigin() {
+  try {
+    const configPath = path.join(siteRoot, 'astro.config.mjs');
+    const content = await fs.readFile(configPath, 'utf8');
+    const match = content.match(/site:\s*['"]([^'"]+)['"]/);
+    if (match) {
+      return new URL(match[1]).origin;
+    }
+  } catch {
+    // Config not readable; ignore.
+  }
+  return null;
 }

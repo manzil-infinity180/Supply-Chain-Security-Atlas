@@ -4,6 +4,7 @@ import starlight from '@astrojs/starlight';
 
 // https://astro.build/config
 export default defineConfig({
+	site: 'https://manzil-infinity180.github.io/Supply-Chain-Security-Atlas',
 	integrations: [
 		starlight({
 			title: 'SSCS Docs',
